@@ -1,0 +1,7 @@
+Flask
+accelerate
+pdfminer.six
+langchain
+sentence-transformers
+chromadb
+pyvi

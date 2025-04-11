@@ -1,0 +1,16 @@
+services:
+  rag-ingestion:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rag-ingestion
+    restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - "./data:/app/data"
+      - "./chroma_storage:/app/chroma_storage"
+      - "./models:/app/models"
+    environment:
+      - OLLAMA_SERVER=${OLLAMA_SERVER}
+    command: ["python", "main.py"]
