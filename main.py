@@ -52,7 +52,8 @@ def search():
     # Adjust 'n_results' to define how many results you need
     results = embedder.collection.query(
         query_embeddings=[query_embedding],
-        n_results=5,
+        n_results=10,
+
     )
     
     return jsonify({"query": query_text, "results": results}), 200
