@@ -1,9 +1,11 @@
 chroma_storage
 data/*
-models/*
+models*
 
 *.env
 *.pyc
 *.pyo
 *.pyd
 __pycache__/
+
+.vscode

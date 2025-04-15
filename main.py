@@ -18,45 +18,38 @@ OLLAMA_SERVER = os.environ.get("OLLAMA_SERVER", "http://localhost:11434/api/gene
 # Initialize the embedder with the same ChromaDB path from your main script
 embedder = Embedder(chroma_path="./chroma_storage")
 
-def get_chunk_by_index(chunk_index, filename, source):
-    results = embedder.collection.get(
-        where={
-                "$and": [
-                    {"chunk_index": chunk_index},
-                    {"filename": filename},
-                    {"source": source}
-                ]
-            },
-    )
-    if results["documents"]:
-        return results["documents"][0]
-    return None
+# Setup logging
+setup_logging()
 
 @app.route("/ping", methods=["GET"])
 def ping():
     return jsonify({"message": "pong"}), 200
 
-@app.route("/search", methods=["GET"])
+
+@app.route("/search", methods=["POST"])
 def search():
-    # Expect a 'query' string in the request
-    query_text = request.args.get("query", "")
+    # Lấy 'query' từ request
+    query_text = request.get_json().get("query").strip()
     if not query_text:
         return jsonify({"error": "Missing 'query' parameter"}), 400
-    
-    # Embed the query text
-    raw_query_embedding = embedder.model.encode(query_text)
-    query_embedding = normalize_vector(raw_query_embedding)
 
-    logger.info(f"Query embedding: {query_embedding}")
-    # Query ChromaDB collection
-    # Adjust 'n_results' to define how many results you need
+    # try:
+    #     query_embedding, llm_output = convert_embedding(query_text)
+    # except Exception as e:
+    #     return jsonify({"error": f"Error: {str(e)}"}), 500
+
+    query_embedding = embedder.encode_query(query_text)
+
     results = embedder.collection.query(
         query_embeddings=[query_embedding],
-        n_results=10,
-
+        n_results=5,
     )
-    
-    return jsonify({"query": query_text, "results": results}), 200
+
+    return jsonify({
+        "original_query": query_text,
+        # "transformed_query": llm_output,
+        "results": results
+    }), 200
 
 @app.route("/rag", methods=["POST"])
 def rag_query():
@@ -64,9 +57,12 @@ def rag_query():
     if not query_text:
         return jsonify({"error": "Missing 'query' parameter"}), 400
 
-    combined_text = query_text.strip()
-    raw_query_embedding = embedder.model.encode(combined_text)
-    query_embedding = normalize_vector(raw_query_embedding)
+    # try:
+    #     query_embedding, output = convert_embedding(query_text)
+    # except Exception as e:
+    #     return jsonify({"error": f"Embedding error: {str(e)}"}), 500
+
+    query_embedding = embedder.encode_query(query_text)
 
     # 1) Fetch top results from ChromaDB
     results = embedder.collection.query(
@@ -74,15 +70,15 @@ def rag_query():
         n_results=5,
     )
 
-    # Get the first 5 documents and their metadata
-    retrieved_chunks = [doc for docs in results["documents"][:3] for doc in docs if doc.strip()]
+    retrieved_chunks = [doc for docs in results["documents"] for doc in docs if doc.strip()]
     context = "\n".join(retrieved_chunks)
 
     logger.info(f"Context: {context}")
     # 3) Tạo prompt
 
     prompt_deepseek = f"""
-    Answer the question below using only the information from the context. Do not make anything up. If the answer is not in the context, respond with "I don't know".
+    Answer the following question in English, using only the information provided in the context below.
+    Do not include any additional information or personal opinions. If the answer is not present in the context, say "I don't know".
     Context:
     ---------------------
     {context}
@@ -94,7 +90,7 @@ def rag_query():
     try:
         response_deepseek = requests.post(
             OLLAMA_SERVER,
-            json={"prompt": prompt_deepseek, "model": MODEL_DEEPSEEK, "stream": False},
+            json={"prompt": prompt_deepseek, "model": MODEL_DEEPSEEK, "stream": False, "options": {"seed": 13102002}},
         )
         response_deepseek.raise_for_status()
         deepseek_output = response_deepseek.json().get("response", "").strip()
@@ -102,7 +98,7 @@ def rag_query():
         return jsonify({"error": f"LLM RAG error: {str(e)}"}), 500
 
     prompt_llama = f"""
-    Bạn là trợ lý AI của công ty HPT Việt Nam. Dưới đây là phần phân tích ban đầu của một mô hình thông minh, bạn hãy tổng hợp lại câu trả lời một cách trau chuốt, dễ hiểu và đầy đủ cho người dùng bằng tiếng Việt.
+    Bạn là trợ lý AI của công ty HPT Việt Nam. Dưới đây là phần phân tích ban đầu, bạn hãy tổng hợp lại câu trả lời một cách trau chuốt, dễ hiểu và đầy đủ cho người dùng bằng tiếng Việt.
 
     Phân tích:
     ---------------------
@@ -116,7 +112,7 @@ def rag_query():
     try:
         response_llama = requests.post(
             OLLAMA_SERVER,
-            json={"prompt": prompt_llama, "model": MODEL_LLAMA, "stream": False},
+            json={"prompt": prompt_llama, "model": MODEL_LLAMA, "stream": False, "options": {"seed": 13102002}},
         )
         response_llama.raise_for_status()
         llama_output = response_llama.json().get("response", "").strip()
@@ -135,7 +131,7 @@ def rag_query():
 def ingest():
     embedder = Embedder(chroma_path="./chroma_storage")
     # Get md files
-    md_files = get_md_files("./data")
+    md_files = get_md_files("./data/vn")
     if not md_files:
         logger.warning("No Markdown files found in ./data directory")
         return jsonify({"error": "No Markdown files found in ./data directory"}), 400
@@ -181,9 +177,6 @@ def ingest():
     }), 200
 
 def main():
-    # Setup logging
-    setup_logging()
-
     # Ensure directories exist
     os.makedirs("./data", exist_ok=True)
     os.makedirs("./chroma_storage", exist_ok=True)

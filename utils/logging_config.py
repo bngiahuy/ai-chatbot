@@ -1,5 +1,5 @@
 import logging
-
+import sys
 def setup_logging(level=logging.INFO):
     """
     Configure logging for the application.
@@ -10,4 +10,5 @@ def setup_logging(level=logging.INFO):
     logging.basicConfig(
         level=level,
         format='%(asctime)s - %(message)s',
+        stream=sys.stdout
     )

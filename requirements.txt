@@ -1,6 +1,7 @@
 Flask
 accelerate
 pdfminer.six
+tiktoken
 langchain
 sentence-transformers
 chromadb

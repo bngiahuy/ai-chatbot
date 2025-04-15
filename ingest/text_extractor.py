@@ -2,101 +2,92 @@ import os
 import logging
 import re
 import unicodedata
-from pdfminer.high_level import extract_text
 
 logger = logging.getLogger(__name__)
 
 def extract_text_from_markdown(markdown_path):
     """
-    Extract text from a Markdown file while preserving its structure.
+    Trích xuất và xử lý nội dung Markdown tiếng Việt, đảm bảo giữ nguyên cấu trúc ban đầu.
     
     Args:
-        markdown_path (str): Path to the Markdown file.
+        markdown_path (str): Đường dẫn tới file Markdown.
     
     Returns:
-        str: Processed text from the Markdown file with structure preserved.
+        str: Văn bản đã xử lý từ file Markdown.
     """
     if not os.path.exists(markdown_path):
-        logger.error(f"File not found: {markdown_path}")
+        logger.error(f"Không tìm thấy file: {markdown_path}")
         return ""
     
-    logger.info(f"Extracting text from markdown file: {markdown_path}")
-    
+    logger.info(f"Đang trích xuất nội dung từ file markdown: {markdown_path}")
     try:
         with open(markdown_path, 'r', encoding='utf-8') as file:
             content = file.read()
         
-        # Số ký tự ban đầu
         original_length = len(content)
-        logger.info(f"Read {original_length} characters from {os.path.basename(markdown_path)}")
+        logger.info(f"Đọc được {original_length} ký tự từ {os.path.basename(markdown_path)}")
         
-        # Xử lý cơ bản để chuẩn hóa nội dung markdown
         processed_content = process_markdown_content(content)
-        
-        logger.info(f"Processed markdown content: {len(processed_content)} characters")
+        logger.info(f"Nội dung sau xử lý có độ dài: {len(processed_content)} ký tự")
         return processed_content
-        
     except Exception as e:
-        logger.error(f"Error extracting text from {markdown_path}: {str(e)}")
+        logger.error(f"Lỗi khi xử lý file {markdown_path}: {e}")
         return ""
 
 def process_markdown_content(content):
     """
-    Process markdown content to normalize it and preserve structure.
+    Xử lý nội dung Markdown tiếng Việt:
+      - Chuẩn hóa Unicode.
+      - Thay thế code block và inline code bằng placeholder để bảo toàn nội dung.
+      - Chuẩn hóa tiêu đề và danh sách.
+      - Xử lý liên kết và hình ảnh.
+      - Gộp các khoảng cách dòng dư thừa.
     
     Args:
-        content (str): Raw markdown content.
+        content (str): Nội dung Markdown gốc.
     
     Returns:
-        str: Processed markdown content.
+        str: Nội dung đã được làm sạch và định dạng lại.
     """
-    # Chuẩn hóa Unicode
+    # 1. Chuẩn hóa Unicode (NFC để xử lý tiếng Việt đúng cách)
     content = unicodedata.normalize("NFC", content)
     
-    # Xử lý code blocks - thay thế bằng placeholder để tránh xử lý bên trong
+    # 2. Xử lý code block: thay thế bằng placeholder để tránh xử lý nội dung bên trong
     code_blocks = []
-    def replace_code_block(match):
+    def code_block_placeholder(match):
         code_blocks.append(match.group(0))
         return f"[CODE_BLOCK_{len(code_blocks)-1}]"
     
-    content = re.sub(r'```[\s\S]*?```', replace_code_block, content)
+    content = re.sub(r'```[\s\S]*?```', code_block_placeholder, content)
     
-    # Đảm bảo tiêu đề markdown có khoảng trống phía trước
-    content = re.sub(r'(?<!\n)\n#', '\n\n#', content)
+    # 3. Xử lý inline code: dấu `` `code` ``
+    inline_code_blocks = []
+    def inline_code_placeholder(match):
+        inline_code_blocks.append(match.group(0))
+        return f"[INLINE_CODE_{len(inline_code_blocks)-1}]"
     
-    # Đảm bảo danh sách có định dạng nhất quán
+    content = re.sub(r'`([^`]+)`', inline_code_placeholder, content)
+    
+    # 4. Chuẩn hóa định dạng tiêu đề: đảm bảo có khoảng trống trước mỗi header
+    content = re.sub(r'(?<!\n)\n(#+)', r'\n\n\1', content)
+    
+    # 5. Chuẩn hóa danh sách: đảm bảo các list (bullet hoặc numbered) có dòng trống trước
     content = re.sub(r'(?<!\n)\n([*\-+]|\d+\.)\s', r'\n\n\1 ', content)
     
-    # Xử lý liên kết markdown - giữ lại văn bản hiển thị
+    # 6. Xử lý liên kết Markdown: giữ lại nội dung hiển thị và loại bỏ URL
     content = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', content)
     
-    # Xử lý hình ảnh markdown - giữ lại alt text
-    content = re.sub(r'!\[([^\]]*)\]\([^)]+\)', r'Image: \1', content)
+    # 7. Xử lý hình ảnh Markdown: giữ lại alt text (nếu có) hoặc ghi chú "Image"
+    content = re.sub(r'!\[([^\]]*)\]\([^)]+\)', lambda m: f"Image: {m.group(1).strip()}" if m.group(1).strip() else "Image", content)
     
-    # Khôi phục code blocks
-    for i, block in enumerate(code_blocks):
-        content = content.replace(f"[CODE_BLOCK_{i}]", block)
+    # 8. Khôi phục inline code và code blocks để không mất nội dung ban đầu
+    for idx, block in enumerate(inline_code_blocks):
+        content = content.replace(f"[INLINE_CODE_{idx}]", block)
+        
+    for idx, block in enumerate(code_blocks):
+        content = content.replace(f"[CODE_BLOCK_{idx}]", block)
     
-    # Đảm bảo khoảng trống nhất quán giữa các đoạn văn
+    # 9. Gộp khoảng cách dòng: chỉ cho phép tối đa 2 dòng trống liên tiếp
     content = re.sub(r'\n{3,}', '\n\n', content)
     
     return content.strip()
-
-def extract_text_from_pdf(pdf_path):
-    """
-    Extract text from a PDF file using pdfminer.six.
-    
-    Args:
-        pdf_path (str): Path to the PDF file.
-        
-    Returns:
-        str: Extracted text from the PDF.
-    """
-    logger.info(f"Extracting text from {pdf_path}")
-    try:
-        text = extract_text(pdf_path)
-        logger.info(f"Extracted {len(text)} characters from {os.path.basename(pdf_path)}")
-        return text
-    except Exception as e:
-        logger.error(f"Error extracting text from {pdf_path}: {str(e)}")
-        return ""

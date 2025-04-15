@@ -3,13 +3,12 @@ import chromadb
 from chromadb.config import Settings
 import logging
 import os
-from pyvi.ViTokenizer import tokenize
 from ingest.text_extractor import extract_text_from_markdown
 from ingest.text_chunker import split_text
 logger = logging.getLogger(__name__)
 
 class Embedder:
-    def __init__(self, model_name="keepitreal/vietnamese-sbert", chroma_path="./chroma_storage"):
+    def __init__(self, model_name="intfloat/multilingual-e5-base", chroma_path="./chroma_storage"):
         """
         Initialize the embedder with the specified model and ChromaDB client.
         Args:
@@ -38,6 +37,30 @@ class Embedder:
             settings=Settings(anonymized_telemetry=False)
         )
         self.collection = self.client.get_or_create_collection("document_chunks")
+    
+    def encode_passage(self, text):
+        """
+        Add the required prefix for passages before encoding with the e5 model.
+        
+        Args:
+            text (str): The text to encode
+            
+        Returns:
+            list: The embedding vector
+        """
+        return self.model.encode(f"passage: {text}", normalize_embeddings=True).tolist()
+    
+    def encode_query(self, text):
+        """
+        Add the required prefix for queries before encoding with the e5 model.
+        
+        Args:
+            text (str): The query text to encode
+            
+        Returns:
+            list: The embedding vector
+        """
+        return self.model.encode(f"query: {text}", normalize_embeddings=True).tolist()
         
     def embed_chunks(self, chunks, metadata_list):
         """
@@ -57,12 +80,9 @@ class Embedder:
         # Generate IDs
         ids = [f"{meta['filename']}_{meta['page']}_{meta['chunk_index']}" for meta in metadata_list]
         
-        # Generate embeddings
+        # Generate embeddings with passage prefix
         logger.info(f"Embedding {len(chunks)} chunks")
-        # Tokenize Vietnamese text
-        # chunks = [tokenize(chunk) for chunk in chunks]
-        # Generate embeddings using the model
-        embeddings = [self.model.encode(chunk).tolist() for chunk in chunks]
+        embeddings = [self.encode_passage(chunk) for chunk in chunks]
         
         # Store in ChromaDB
         self.collection.add(
@@ -115,7 +135,6 @@ class Embedder:
             
             # Create metadata
             metadata = {
-                "source": "markdown",
                 "filename": filename,
                 "file_path": markdown_path,
                 "file_size": file_size,
