@@ -8,6 +8,7 @@ from utils.normalize import normalize_vector
 from flask import Flask, request, jsonify
 from ingest.embedder import Embedder
 import requests
+from collections import Counter
 
 
 logger = logging.getLogger(__name__)
@@ -21,117 +22,231 @@ embedder = Embedder(chroma_path="./chroma_storage")
 # Setup logging
 setup_logging()
 
+# Helper function
+def run_vector_search(query_text: str, n_results: int =10, metadata_filters=None):
+    query_embedding = embedder.encode_query(query_text)
+    query_params = {
+        "query_embeddings": [query_embedding],
+        "n_results": n_results,
+    }
+    if metadata_filters:
+        query_params["where"] = metadata_filters
+
+    raw_results = embedder.collection.query(**query_params)
+
+    return raw_results
+
+
 @app.route("/ping", methods=["GET"])
 def ping():
     return jsonify({"message": "pong"}), 200
 
-
 @app.route("/search", methods=["POST"])
 def search():
-    # Lấy 'query' từ request
-    query_text = request.get_json().get("query").strip()
+    start_time = time.time()
+    request_data = request.get_json() or {}
+    query_text = request_data.get("query", "").strip()
+
     if not query_text:
-        return jsonify({"error": "Missing 'query' parameter"}), 400
+        return jsonify({"error": "Missing or empty 'query' parameter"}), 400
 
-    # try:
-    #     query_embedding, llm_output = convert_embedding(query_text)
-    # except Exception as e:
-    #     return jsonify({"error": f"Error: {str(e)}"}), 500
+    try:
+        n_results = int(request_data.get("n_results", 10))
+        metadata_filters = request_data.get("metadata_filters", None)
 
-    query_embedding = embedder.encode_query(query_text)
+        logger.info(f"Search: '{query_text}' (n_results={n_results})")
 
-    results = embedder.collection.query(
-        query_embeddings=[query_embedding],
-        n_results=5,
-    )
+        result_data = run_vector_search(
+            query_text=query_text,
+            n_results=n_results,
+            metadata_filters=metadata_filters,
+        )
 
-    return jsonify({
-        "original_query": query_text,
-        # "transformed_query": llm_output,
-        "results": results
-    }), 200
+        elapsed = time.time() - start_time
+        response = {
+            "original_query": query_text,
+            "results": result_data,
+            "total_results": len(result_data),
+            "metrics": {"elapsed_seconds": elapsed}
+        }
+
+        return jsonify(response), 200
+
+    except Exception as e:
+        logger.error(f"Search error: {e}")
+        return jsonify({"error": f"Search failed: {str(e)}"}), 500
+
 
 @app.route("/rag", methods=["POST"])
 def rag_query():
-    query_text = request.get_json().get("query")
+    request_data = request.get_json() or {}
+    query_text = request_data.get("query", "").strip()
+    n_initial_results = int(request_data.get("n_initial_results", 10)) # Số kết quả ban đầu
+    n_expanded_results = int(request_data.get("n_expanded_results", 30)) # Số kết quả mở rộng từ file chính
+
     if not query_text:
         return jsonify({"error": "Missing 'query' parameter"}), 400
 
-    # try:
-    #     query_embedding, output = convert_embedding(query_text)
-    # except Exception as e:
-    #     return jsonify({"error": f"Embedding error: {str(e)}"}), 500
-
-    query_embedding = embedder.encode_query(query_text)
-
-    # 1) Fetch top results from ChromaDB
-    results = embedder.collection.query(
-        query_embeddings=[query_embedding],
-        n_results=5,
-    )
-
-    retrieved_chunks = [doc for docs in results["documents"] for doc in docs if doc.strip()]
-    context = "\n".join(retrieved_chunks)
-
-    logger.info(f"Context: {context}")
-    # 3) Tạo prompt
-
-    prompt_deepseek = f"""
-    Answer the following question in English, using only the information provided in the context below.
-    Do not include any additional information or personal opinions. If the answer is not present in the context, say "I don't know".
-    Context:
-    ---------------------
-    {context}
-    ---------------------
-    Question: {query_text}
-    Answer:
-    """
-
     try:
+        # Step 1a: Initial search to find relevant files
+        initial_results = run_vector_search(query_text, n_results=n_initial_results)
+
+        if not initial_results or not initial_results.get("ids") or not initial_results["ids"][0]:
+            logger.warning(f"[RAG] No relevant chunks found initially for query: {query_text}")
+            # Trả về phản hồi không tìm thấy thông tin
+            return jsonify({
+                "query": query_text, "retrieved_context": "",
+                "reasoning_deepseek": "I don't know based on the provided context.",
+                "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
+            }), 200
+
+        # Step 1b: Identify the most relevant file
+        metadatas = initial_results.get("metadatas", [[]])[0]
+        if not metadatas:
+             logger.warning(f"[RAG] No metadata found in initial results for query: {query_text}")
+             # Xử lý như không tìm thấy chunks
+             return jsonify({
+                "query": query_text, "retrieved_context": "",
+                "reasoning_deepseek": "I don't know based on the provided context.",
+                "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
+            }), 200
+
+        filenames = [meta.get("filename") for meta in metadatas if meta and meta.get("filename")]
+        if not filenames:
+            logger.warning(f"[RAG] No filenames found in metadata for query: {query_text}")
+             # Xử lý như không tìm thấy chunks
+            return jsonify({
+                "query": query_text, "retrieved_context": "",
+                "reasoning_deepseek": "I don't know based on the provided context.",
+                "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
+            }), 200
+
+        most_common_file = Counter(filenames).most_common(1)[0][0]
+        logger.info(f"[RAG] Most relevant file identified: {most_common_file}")
+
+        # Step 1c: Retrieve more context from the most relevant file
+        expanded_results = run_vector_search(
+            query_text,
+            n_results=n_expanded_results,
+            metadata_filters={"filename": most_common_file}
+        )
+
+        # Step 1d: Combine context
+        retrieved_docs = expanded_results.get("documents", [[]])[0]
+        retrieved_chunks = [doc for doc in retrieved_docs if doc and doc.strip()]
+
+        if not retrieved_chunks:
+             logger.warning(f"[RAG] No expanded chunks found for file {most_common_file}, query: {query_text}")
+             # Fallback: sử dụng kết quả ban đầu nếu có
+             initial_docs = initial_results.get("documents", [[]])[0]
+             retrieved_chunks = [doc for doc in initial_docs if doc and doc.strip()]
+             if not retrieved_chunks:
+                  # Vẫn không có gì, trả về không biết
+                  return jsonify({
+                      "query": query_text, "retrieved_context": "",
+                      "reasoning_deepseek": "I don't know based on the provided context.",
+                      "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
+                  }), 200
+
+
+        # Sắp xếp lại các chunk theo thứ tự xuất hiện trong file gốc (nếu cần và có metadata chunk_index)
+        # expanded_metadatas = expanded_results.get("metadatas", [[]])[0]
+        # if expanded_metadatas and all('chunk_index' in meta for meta in expanded_metadatas):
+        #     sorted_indices = sorted(range(len(retrieved_chunks)), key=lambda k: expanded_metadatas[k]['chunk_index'])
+        #     retrieved_chunks = [retrieved_chunks[i] for i in sorted_indices]
+
+
+        context = "\n\n---\n\n".join(retrieved_chunks)
+        logger.info(f"[RAG] Expanded context generated ({len(retrieved_chunks)} chunks from {most_common_file}) for query: {query_text}")
+
+
+        # Step 2 & 3: (Giữ nguyên phần gọi DeepSeek và Llama)
+        # Step 2: Ask DeepSeek for reasoning
+        prompt_deepseek = f"""
+You are a precise and obedient language model of HPT Vietnam Corporation.
+
+Your task is to answer questions **only** based on the given context.
+
+- Do **not** use any prior knowledge, assumptions, or external information.
+- Do **not** make up facts, speculate, or include opinions.
+- If the answer cannot be found **explicitly or implicitly** in the context, reply with:
+"I don't know based on the provided context."
+
+Respond clearly, concisely, and strictly grounded in the context.
+
+---
+
+Context:
+{context}
+
+---
+
+Question:
+{query_text}
+
+Answer:
+        """
+
         response_deepseek = requests.post(
             OLLAMA_SERVER,
-            json={"prompt": prompt_deepseek, "model": MODEL_DEEPSEEK, "stream": False, "options": {"seed": 13102002}},
+            json={
+                "prompt": prompt_deepseek, 
+                "model": MODEL_DEEPSEEK, 
+                "stream": False,
+                "options": {
+                    "temperature": 0.0,
+                    "seed": 42,
+                }
+            },
         )
         response_deepseek.raise_for_status()
         deepseek_output = response_deepseek.json().get("response", "").strip()
-    except requests.RequestException as e:
-        return jsonify({"error": f"LLM RAG error: {str(e)}"}), 500
+        if not deepseek_output:
+            logger.warning(f"[RAG] No response from DeepSeek for query: {query_text}")
+            # Trả về phản hồi không tìm thấy thông tin
+            return jsonify({
+                "query": query_text, 
+                "retrieved_context": context,
+                "reasoning_deepseek": "I don't know based on the provided context.",
+                "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
+            }), 200
+        
+        deepseek_output_think = deepseek_output.split("</think>\n")[0]
+        deepseek_output_answer = deepseek_output.split("</think>\n")[1]
 
-    prompt_llama = f"""
-    Bạn là trợ lý AI của công ty HPT Việt Nam. Dưới đây là phần phân tích ban đầu, bạn hãy tổng hợp lại câu trả lời một cách trau chuốt, dễ hiểu và đầy đủ cho người dùng bằng tiếng Việt.
+#         # Step 3: Vietnamese final answer using LLaMA
+#         prompt_llama = f"""
+# Bạn là dịch thuật viên của HPT Vietnam Corporation.
+# Bạn có nhiệm vụ dịch câu trả lời từ tiếng Anh sang tiếng Việt.
+# Input: {deepseek_output}
+# Output:
+#         """
 
-    Phân tích:
-    ---------------------
-    {deepseek_output}
-    ---------------------
-    Câu hỏi: {query_text}
+#         response_llama = requests.post(
+#             OLLAMA_SERVER,
+#             json={"prompt": prompt_llama, "model": MODEL_LLAMA, "stream": False},
+#         )
+#         response_llama.raise_for_status()
+#         llama_output = response_llama.json().get("response", "").strip()
 
-    Câu trả lời:
-    """
+        return jsonify({
+            "query": query_text,
+            "retrieved_context": context,
+            "reasoning_deepseek": deepseek_output_think,
+            "final_answer": deepseek_output_answer
+        }), 200
 
-    try:
-        response_llama = requests.post(
-            OLLAMA_SERVER,
-            json={"prompt": prompt_llama, "model": MODEL_LLAMA, "stream": False, "options": {"seed": 13102002}},
-        )
-        response_llama.raise_for_status()
-        llama_output = response_llama.json().get("response", "").strip()
-    except requests.RequestException as e:
-        return jsonify({"error": f"LLM response error: {str(e)}"}), 500
+    except Exception as e:
+        logger.error(f"[RAG Error] {e}", exc_info=True) # Log traceback
+        return jsonify({"error": f"RAG failed: {str(e)}"}), 500
 
-    return jsonify({
-        "query": query_text,
-        "retrieved_context": context,
-        "reasoning_deepseek": deepseek_output,
-        "final_answer": llama_output
-    }), 200
 
 
 @app.route("/ingest", methods=["GET"])
 def ingest():
     embedder = Embedder(chroma_path="./chroma_storage")
     # Get md files
-    md_files = get_md_files("./data/vn")
+    md_files = get_md_files("./data/en")
     if not md_files:
         logger.warning("No Markdown files found in ./data directory")
         return jsonify({"error": "No Markdown files found in ./data directory"}), 400

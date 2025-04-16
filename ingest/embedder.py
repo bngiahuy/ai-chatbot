@@ -34,9 +34,16 @@ class Embedder:
         # Khởi tạo ChromaDB
         self.client = chromadb.PersistentClient(
             path=chroma_path,
-            settings=Settings(anonymized_telemetry=False)
+            settings=Settings(anonymized_telemetry=False),
         )
-        self.collection = self.client.get_or_create_collection("document_chunks")
+        self.collection = self.client.get_or_create_collection(
+            "hsv_document_chunks", 
+            metadata={
+                "hnsw:space": "cosine",
+                "hnsw:construction_ef": 200,
+                "hnsw:search_ef": 200,
+            }
+        )
     
     def encode_passage(self, text):
         """
