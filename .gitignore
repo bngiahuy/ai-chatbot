@@ -7,5 +7,6 @@ models*
 *.pyo
 *.pyd
 __pycache__/
+*.log
 
 .vscode

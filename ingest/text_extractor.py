@@ -52,42 +52,42 @@ def process_markdown_content(content):
     # 1. Chuẩn hóa Unicode (NFC để xử lý tiếng Việt đúng cách)
     content = unicodedata.normalize("NFC", content)
     
-    # 2. Xử lý code block: thay thế bằng placeholder để tránh xử lý nội dung bên trong
-    code_blocks = []
-    def code_block_placeholder(match):
-        code_blocks.append(match.group(0))
-        return f"[CODE_BLOCK_{len(code_blocks)-1}]"
+    # # 2. Xử lý code block: thay thế bằng placeholder để tránh xử lý nội dung bên trong
+    # code_blocks = []
+    # def code_block_placeholder(match):
+    #     code_blocks.append(match.group(0))
+    #     return f"[CODE_BLOCK_{len(code_blocks)-1}]"
     
-    content = re.sub(r'```[\s\S]*?```', code_block_placeholder, content)
+    # content = re.sub(r'```[\s\S]*?```', code_block_placeholder, content)
     
-    # 3. Xử lý inline code: dấu `` `code` ``
-    inline_code_blocks = []
-    def inline_code_placeholder(match):
-        inline_code_blocks.append(match.group(0))
-        return f"[INLINE_CODE_{len(inline_code_blocks)-1}]"
+    # # 3. Xử lý inline code: dấu `` `code` ``
+    # inline_code_blocks = []
+    # def inline_code_placeholder(match):
+    #     inline_code_blocks.append(match.group(0))
+    #     return f"[INLINE_CODE_{len(inline_code_blocks)-1}]"
     
-    content = re.sub(r'`([^`]+)`', inline_code_placeholder, content)
+    # content = re.sub(r'`([^`]+)`', inline_code_placeholder, content)
     
-    # 4. Chuẩn hóa định dạng tiêu đề: đảm bảo có khoảng trống trước mỗi header
-    content = re.sub(r'(?<!\n)\n(#+)', r'\n\n\1', content)
+    # # 4. Chuẩn hóa định dạng tiêu đề: đảm bảo có khoảng trống trước mỗi header
+    # content = re.sub(r'(?<!\n)\n(#+)', r'\n\n\1', content)
     
-    # 5. Chuẩn hóa danh sách: đảm bảo các list (bullet hoặc numbered) có dòng trống trước
-    content = re.sub(r'(?<!\n)\n([*\-+]|\d+\.)\s', r'\n\n\1 ', content)
+    # # 5. Chuẩn hóa danh sách: đảm bảo các list (bullet hoặc numbered) có dòng trống trước
+    # content = re.sub(r'(?<!\n)\n([*\-+]|\d+\.)\s', r'\n\n\1 ', content)
     
-    # 6. Xử lý liên kết Markdown: giữ lại nội dung hiển thị và loại bỏ URL
-    content = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', content)
+    # # 6. Xử lý liên kết Markdown: giữ lại nội dung hiển thị và loại bỏ URL
+    # content = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', content)
     
-    # 7. Xử lý hình ảnh Markdown: giữ lại alt text (nếu có) hoặc ghi chú "Image"
-    content = re.sub(r'!\[([^\]]*)\]\([^)]+\)', lambda m: f"Image: {m.group(1).strip()}" if m.group(1).strip() else "Image", content)
+    # # 7. Xử lý hình ảnh Markdown: giữ lại alt text (nếu có) hoặc ghi chú "Image"
+    # content = re.sub(r'!\[([^\]]*)\]\([^)]+\)', lambda m: f"Image: {m.group(1).strip()}" if m.group(1).strip() else "Image", content)
     
-    # 8. Khôi phục inline code và code blocks để không mất nội dung ban đầu
-    for idx, block in enumerate(inline_code_blocks):
-        content = content.replace(f"[INLINE_CODE_{idx}]", block)
+    # # 8. Khôi phục inline code và code blocks để không mất nội dung ban đầu
+    # for idx, block in enumerate(inline_code_blocks):
+    #     content = content.replace(f"[INLINE_CODE_{idx}]", block)
         
-    for idx, block in enumerate(code_blocks):
-        content = content.replace(f"[CODE_BLOCK_{idx}]", block)
+    # for idx, block in enumerate(code_blocks):
+    #     content = content.replace(f"[CODE_BLOCK_{idx}]", block)
     
-    # 9. Gộp khoảng cách dòng: chỉ cho phép tối đa 2 dòng trống liên tiếp
-    content = re.sub(r'\n{3,}', '\n\n', content)
+    # # 9. Gộp khoảng cách dòng: chỉ cho phép tối đa 2 dòng trống liên tiếp
+    # content = re.sub(r'\n{3,}', '\n\n', content)
     
     return content.strip()

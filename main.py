@@ -1,15 +1,16 @@
+from dotenv import load_dotenv
 import os
 import logging
 import time
 from ingest.embedder import Embedder
 from utils.file_utils import get_md_files
 from utils.logging_config import setup_logging
-from utils.normalize import normalize_vector
 from flask import Flask, request, jsonify
 from ingest.embedder import Embedder
 import requests
 from collections import Counter
 
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
@@ -148,15 +149,7 @@ def rag_query():
                       "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
                   }), 200
 
-
-        # Sắp xếp lại các chunk theo thứ tự xuất hiện trong file gốc (nếu cần và có metadata chunk_index)
-        # expanded_metadatas = expanded_results.get("metadatas", [[]])[0]
-        # if expanded_metadatas and all('chunk_index' in meta for meta in expanded_metadatas):
-        #     sorted_indices = sorted(range(len(retrieved_chunks)), key=lambda k: expanded_metadatas[k]['chunk_index'])
-        #     retrieved_chunks = [retrieved_chunks[i] for i in sorted_indices]
-
-
-        context = "\n\n---\n\n".join(retrieved_chunks)
+        context = "\n".join(retrieved_chunks)
         logger.info(f"[RAG] Expanded context generated ({len(retrieved_chunks)} chunks from {most_common_file}) for query: {query_text}")
 
 
@@ -297,4 +290,5 @@ def main():
     os.makedirs("./chroma_storage", exist_ok=True)
     
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=5000)

@@ -1,6 +1,7 @@
 Flask
 accelerate
 pdfminer.six
+dotenv
 tiktoken
 langchain
 sentence-transformers
