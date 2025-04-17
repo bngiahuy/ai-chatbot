@@ -3,6 +3,7 @@ accelerate
 pdfminer.six
 dotenv
 tiktoken
+waitress
 langchain
 sentence-transformers
 chromadb
