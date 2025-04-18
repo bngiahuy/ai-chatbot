@@ -26,7 +26,7 @@ embedder = Embedder(chroma_path="./chroma_storage")
 setup_logging()
 
 # Helper function
-def run_vector_search(query_text: str, n_results: int = 10, metadata_filters=None):
+def run_vector_search(query_text: str, n_results: int = 5, metadata_filters=None):
     query_embedding = embedder.encode_query(query_text)
     
     query_params = {
@@ -130,14 +130,12 @@ def rag_query():
         Query: {query_text}
         ---
         Constraints:
-        - You are an assistant helping HPT Vietnam Corporation.
+        - You are a helpful assistant created by Bùi Nguyễn Gia Huy.
         - MUST use English language in any response.
         - Do not include any disclaimers or unnecessary information.
         - Be concise and specific.
         - Use Markdown format for the answer.
         - This is very important to my career. You'd better be careful with the answer.
-        
-        Answer:
         """
 
         response_deepseek = requests.post(

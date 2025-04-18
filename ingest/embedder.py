@@ -9,7 +9,7 @@ from chromadb.utils import embedding_functions
 MODEL_EMBEDDING = "sentence-transformers/all-mpnet-base-v2"
 
 sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(
-    model_name=MODEL_EMBEDDING
+    model_name=MODEL_EMBEDDING,
 )
 
 logger = logging.getLogger(__name__)
@@ -48,6 +48,7 @@ class Embedder:
             embedding_function=sentence_transformer_ef,
             metadata={
                 "hnsw:space": "cosine", # Cosine distance
+                "hnsw:M": 32 , # Number of bi-directional links created for every new element
                 "hnsw:construction_ef": 200, # Construction ef is the size of the dynamic list of neighbors
                 "hnsw:search_ef": 200, # Search ef is the size of the dynamic list of neighbors during search
             }

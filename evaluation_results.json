@@ -1,0 +1,575 @@
+{
+  "timestamp": "2025-04-18T09:58:29Z",
+  "model": "deepseek-r1:7b",
+  "k": 4,
+  "average_metrics": {
+    "rouge-1-f": 0.23953255756156233,
+    "rouge-2-f": 0.09821541516111366,
+    "rouge-l-f": 0.22809695761276946,
+    "bert_f1": 0.20963340974412858,
+    "semantic_ctx_sim": 0.7290532857179641,
+    "retrieval_hit_rate": 0.65
+  },
+  "results": [
+    {
+      "query": "What is HSV?",
+      "ground_truth": "HSV (Vietnam Technology and Solutions Center) is a unit under HPT Information Technology Service Joint Stock Company, established to implement HPT's strategy of proactive technology development by partnering with Vietnamese and foreign technology firms to co-develop technologies or build a shared ecosystem.",
+      "generated_answer": "HSV is an internal unit of HPT Information Technology Service Joint Stock Company. It serves as a strategic hub focused on three main functions: Partner Management and Development, Development of Vietnamese Technology Products – Solutions, and Market Development. HSV's role includes managing partnerships, creating technology solutions, and expanding market activities within Vietnam.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.3783783783783784,
+            "p": 0.2978723404255319,
+            "f": 0.33333332840419505
+          },
+          "rouge-2": {
+            "r": 0.12195121951219512,
+            "p": 0.09803921568627451,
+            "f": 0.108695647232987
+          },
+          "rouge-l": {
+            "r": 0.3783783783783784,
+            "p": 0.2978723404255319,
+            "f": 0.33333332840419505
+          }
+        },
+        "bert_f1": 0.33822426199913025,
+        "semantic_ctx_sim": 0.7848961353302002,
+        "retrieval_hit": true
+      }
+    },
+    {
+      "query": "What are the strategic goals of HSV?",
+      "ground_truth": "HSV aims to enhance innovation, develop Vietnamese technology products and solutions, and build and expand markets both domestically and internationally.",
+      "generated_answer": "The strategic goals of HSV are structured over a three-year roadmap, focusing on progressive growth, partnership expansion, product development, technology advancement, business optimization, profitability, market diversification, and international expansion.\n\n- **Year 1 (Foundation Building & Experimentation):**\n  - Establish organization, team, resources, processes, job descriptions, and governance.\n  - Develop initial products under the HPT brand.\n  - Set up necessary technical platforms.\n  - Generate revenue from multiple products/solutions.\n  - Engage in key innovation events and marketplaces.\n\n- **Year 2 (Adjustment & Readiness):**\n  - Expand workforce and optimize governance systems.\n  - Optimize and expand partner portfolio, adding at least three new partners/products/solutions.\n  - Develop additional products and achieve IP certifications.\n  - Set business plans for diverse revenue streams and profitability targets.\n  - Prepare for international markets.\n\n- **Year 3 (Expansion):**\n  - Continue workforce development and optimize governance systems.\n  - Expand partnerships by adding five or more new partners/products/solutions.\n  - Develop two self-developed products and obtain multiple IP certifications.\n  - Aim to obtain a patent.\n  - Diversify revenue streams, including data monetization, and explore international markets.\n\nHSV's strategic goals are centered around building a strong foundation, growing through partnerships and product development, optimizing business operations for profitability, diversifying markets, and advancing into international expansion.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.4117647058823529,
+            "p": 0.05343511450381679,
+            "f": 0.0945945925611761
+          },
+          "rouge-2": {
+            "r": 0.10526315789473684,
+            "p": 0.011111111111111112,
+            "f": 0.020100500785333854
+          },
+          "rouge-l": {
+            "r": 0.4117647058823529,
+            "p": 0.05343511450381679,
+            "f": 0.0945945925611761
+          }
+        },
+        "bert_f1": -0.03015720658004284,
+        "semantic_ctx_sim": 0.6866355538368225,
+        "retrieval_hit": false
+      }
+    },
+    {
+      "query": "What are HSV's main responsibilities?",
+      "ground_truth": "HSV's responsibilities include partner management and development, development of Vietnamese technology products and solutions, and market development.",
+      "generated_answer": "HSV's main responsibilities include:\n\n1. **Partner Management and Development:**\n   - Actively seeking, evaluating, filtering, and developing technology partners.\n   - Proposing investment options for partners, including Mergers and Acquisitions.\n\n2. **Development of Vietnamese Technology Products – Solutions:**\n   - Testing, evaluating, and demonstrating potential technologies.\n   - Integrating partner technologies into commercial products under the HPT brand.\n   - Implementing projects using these products and providing post-deployment technical support.\n   - Actively participating in innovation events and activities.\n\n3. **Market Development:**\n   - Prioritizing business development through internal channels and partner sales.\n   - Expanding digital sales channels, including online sales and marketing.\n   - Conducting market research and planning for product/solution promotions.\n   - Transitioning to direct sales when appropriate.\n\nThese responsibilities encompass partnership management, product development, and market expansion strategies.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.7857142857142857,
+            "p": 0.11956521739130435,
+            "f": 0.20754716751868993
+          },
+          "rouge-2": {
+            "r": 0.1875,
+            "p": 0.025,
+            "f": 0.044117644982699065
+          },
+          "rouge-l": {
+            "r": 0.7142857142857143,
+            "p": 0.10869565217391304,
+            "f": 0.18867924299038802
+          }
+        },
+        "bert_f1": 0.1594102531671524,
+        "semantic_ctx_sim": 0.7548567652702332,
+        "retrieval_hit": true
+      }
+    },
+    {
+      "query": "How does HSV develop partnerships?",
+      "ground_truth": "HSV seeks, evaluates, filters, and develops a network of partners, proposes investment options including M&A, and finalizes cooperation agreements and business processes with selected partners.",
+      "generated_answer": "HSV develops partnerships through a structured approach that includes:\n\n1. **Partner Introduction and Evaluation**: HSV actively identifies and introduces potential partners to HPT, ensuring they meet stringent criteria for deep cooperation.\n\n2. **Co-Development and Collaboration**: They work closely with partners on technology development projects, co-creating solutions tailored to both parties' needs.\n\n3. **Legal and Policy Management**: The Partner Relations Department (P.QHĐT) handles legal aspects, ensuring compliance and managing contracts effectively.\n\n4. **Sales Support**: HSV assists in building internal and external sales channels, facilitating the distribution of products and solutions.\n\n5. **Investment Proposals**: They evaluate partners' potential and may propose strategic investments to enhance partnership viability.\n\nThis comprehensive approach ensures that HSV fosters strong, mutually beneficial relationships with its partners.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.34782608695652173,
+            "p": 0.08080808080808081,
+            "f": 0.13114753792394526
+          },
+          "rouge-2": {
+            "r": 0.0,
+            "p": 0.0,
+            "f": 0.0
+          },
+          "rouge-l": {
+            "r": 0.30434782608695654,
+            "p": 0.0707070707070707,
+            "f": 0.11475409530099444
+          }
+        },
+        "bert_f1": 0.06876345723867416,
+        "semantic_ctx_sim": 0.6919519305229187,
+        "retrieval_hit": false
+      }
+    },
+    {
+      "query": "What is HSV's operational model?",
+      "ground_truth": "HSV operates as a hub for connection and development, engaging in partner engagement, technology development, market development, and project implementation, with coordinated roles from internal HPT units and external partners.",
+      "generated_answer": "HSV operates as a central hub managing three main functions: Partner Management, Technology Development, and Market Expansion.\n\n1. **Partner Management**: Actively seeks, evaluates, and develops technology partners, including potential M&A opportunities.\n\n2. **Technology Development**: Tests and integrates partner technologies into HPT products under the HPT brand, supporting projects with post-deployment support and participating in innovation activities.\n\n3. **Market Expansion**: Focuses on business development through internal channels, digital sales, and external markets, transitioning to direct sales as appropriate.\n\nThis model ensures HSV acts as a connector between HPT units and external partners, driving tech product development and market presence.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.5769230769230769,
+            "p": 0.18072289156626506,
+            "f": 0.2752293541654743
+          },
+          "rouge-2": {
+            "r": 0.20689655172413793,
+            "p": 0.06315789473684211,
+            "f": 0.09677418996488046
+          },
+          "rouge-l": {
+            "r": 0.46153846153846156,
+            "p": 0.14457831325301204,
+            "f": 0.2201834826058413
+          }
+        },
+        "bert_f1": 0.2353789210319519,
+        "semantic_ctx_sim": 0.9368106722831726,
+        "retrieval_hit": true
+      }
+    },
+    {
+      "query": "What are HSV's short and mid-term objectives?",
+      "ground_truth": "HSV's 3-year roadmap includes building foundational structures in year 1, optimizing and expanding in year 2, and scaling operations and product offerings in year 3, including targets like IP certifications and entering international markets.",
+      "generated_answer": "**HSV's Objectives**\n\n- **Short-Term (Year 1 - Foundation Building & Experimentation):**\n  - Establish organizational structure with defined processes, job descriptions, and governance systems.\n  - Identify and evaluate potential partners for initial product development.\n  - Develop go-to-market solutions based on partner products.\n  - Create the first HPT-branded product.\n  - Set up necessary technical tools and platforms.\n  - Generate revenue from more than 3 products/solutions through business channels.\n\n- **Mid-Term (Year 2 - Adjustment & Readiness):**\n  - Expand workforce to meet defined directions.\n  - Optimize and expand the partner portfolio, adding at least 3 new partners.\n  - Develop one additional product.\n  - Achieve IP certification for a product.\n  - Refine technology expertise and application domains.\n  - Set business plans with economic targets, develop sales channels, customer base, and aim for profitability.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.1111111111111111,
+            "p": 0.03225806451612903,
+            "f": 0.04999999651250024
+          },
+          "rouge-2": {
+            "r": 0.0,
+            "p": 0.0,
+            "f": 0.0
+          },
+          "rouge-l": {
+            "r": 0.1111111111111111,
+            "p": 0.03225806451612903,
+            "f": 0.04999999651250024
+          }
+        },
+        "bert_f1": 0.042137518525123596,
+        "semantic_ctx_sim": 0.8500993251800537,
+        "retrieval_hit": true
+      }
+    },
+    {
+      "query": "What products and solutions is HSV focusing on in 2024?",
+      "ground_truth": "HSV is focusing on eight main product-solution groups including AI Computer Vision, 3D Digitization, Passwordless Authentication, Network & Security Platforms, Cloud Infrastructure, Digital Signage, Smart Data Collection, and Product Management via QR.",
+      "generated_answer": "HSV's focus areas in 2024 encompass eight main product-solution groups:\n\n1. **AI Computer Vision:** Includes AI-driven vision solutions for applications like attendance tracking and security systems.\n\n2. **3D Digitization and Interactive Web:** Develops immersive digital solutions using 3D virtual tours, AR/VR, and interactive models.\n\n3. **Passwordless Authentication:** Offers secure authentication methods without passwords for enterprises, schools, and governments.\n\n4. **Network & Security Technology Platforms:** Focuses on SASE, SD-WAN, Edge Services, and network security devices to enhance infrastructure security.\n\n5. **Cloud Infrastructure:** Provides cloud services including BaaS and DRaaS for reliable backup and disaster recovery solutions.\n\n6. **Digital Signage:** Manages remote content for video, images, documents, and scheduling across various locations.\n\n7. **Smart Data Collection and Analysis:** Employs advanced analytics using Geolntellect solutions to collect and analyze data effectively.\n\n8. **Product Management via QR:** Implements the SCT solution for product tracking using QR codes in supply chain or inventory management.\n\nThese strategic directions highlight HSV's comprehensive approach to technology development across diverse sectors.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.4375,
+            "p": 0.10294117647058823,
+            "f": 0.1666666635827665
+          },
+          "rouge-2": {
+            "r": 0.12903225806451613,
+            "p": 0.024844720496894408,
+            "f": 0.04166666395887604
+          },
+          "rouge-l": {
+            "r": 0.40625,
+            "p": 0.09558823529411764,
+            "f": 0.15476190167800458
+          }
+        },
+        "bert_f1": 0.1474338173866272,
+        "semantic_ctx_sim": 0.6379097700119019,
+        "retrieval_hit": false
+      }
+    },
+    {
+      "query": "Who are the leaders of HSV?",
+      "ground_truth": "The leadership team includes Lê Nhựt Hoàng Nam (Director) and Trần Thị Đỗ Thư (Deputy Director), with responsibilities across business development, technology, governance, marketing, and compliance.",
+      "generated_answer": "The leaders of HSV are:\n\n- **Lê Nhựt Hoàng Nam (NamLNH)**  \n- **Trần Thị Đỗ Thư (ThưTTĐ)**",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.28,
+            "p": 0.4375,
+            "f": 0.3414634098750744
+          },
+          "rouge-2": {
+            "r": 0.16,
+            "p": 0.25,
+            "f": 0.19512194646044032
+          },
+          "rouge-l": {
+            "r": 0.28,
+            "p": 0.4375,
+            "f": 0.3414634098750744
+          }
+        },
+        "bert_f1": 0.3116922676563263,
+        "semantic_ctx_sim": 0.6935245990753174,
+        "retrieval_hit": false
+      }
+    },
+    {
+      "query": "Who are the members of the Business & Project Development Department?",
+      "ground_truth": "The department includes Head of Business Development Lưu Xuân Giang, Business Development Officer Trịnh Thị Diễm My, and Direct Sales Personnel Phan Thị Quỳnh Như, Trần Khánh Huy, and Nguyễn Trịnh Kim Duy.",
+      "generated_answer": "The members of the Business & Project Development Department are:\n\n- Head of Business Development: Lưu Xuân Giang (GiangLX)\n- Business Development Officer: Trịnh Thị Diễm My (MyTTD)\n- Direct Sales Personnel: Phan Thị Quỳnh Như (NhưPTQ), Trần Khanh Huy (HuyTK), and Nguyễn Trịnh Kim Duy (DuyNTK)",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.6785714285714286,
+            "p": 0.48717948717948717,
+            "f": 0.5671641742392515
+          },
+          "rouge-2": {
+            "r": 0.41935483870967744,
+            "p": 0.2826086956521739,
+            "f": 0.337662332852083
+          },
+          "rouge-l": {
+            "r": 0.6428571428571429,
+            "p": 0.46153846153846156,
+            "f": 0.5373134279705949
+          }
+        },
+        "bert_f1": 0.5345643162727356,
+        "semantic_ctx_sim": 0.8052047491073608,
+        "retrieval_hit": true
+      }
+    },
+    {
+      "query": "What are the roles in the Technology & Partner Development Department?",
+      "ground_truth": "This department includes multiple roles such as fullstack programmers, frontend and backend developers, presales engineers, consulting engineers, and a Unity developer, all contributing to technology development and partner support.",
+      "generated_answer": "The roles in the Technology & Partner Development Department are as follows:\n\n- **Trần Văn Bình (TVBình):** Fullstack Programmer and Presales Engineer  \n- **Nguyễn Quang Long (LongNQ):** Presales Engineer and Consulting Engineer  \n- **Nguyễn Xuan Tien (TiếnNX):** Frontend Programmer and Software Solutions Engineer  \n- **Bùi Mạnh Thành (ThànhBM):** Backend Programmer and Software Solutions Engineer  \n- **Bùi Nguyen Gia Huy (HuyBNG):** Backend Programmer and Software Solutions Engineer  \n- **Phạm Hoàng Quân (QuânPH):** Fullstack Programmer, Unity Developer, and Software Solutions Engineer (Collaborator)",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.15384615384615385,
+            "p": 0.08,
+            "f": 0.105263153393352
+          },
+          "rouge-2": {
+            "r": 0.0,
+            "p": 0.0,
+            "f": 0.0
+          },
+          "rouge-l": {
+            "r": 0.15384615384615385,
+            "p": 0.08,
+            "f": 0.105263153393352
+          }
+        },
+        "bert_f1": -0.20450125634670258,
+        "semantic_ctx_sim": 0.5560845136642456,
+        "retrieval_hit": false
+      }
+    },
+    {
+      "query": "How does HSV support innovation?",
+      "ground_truth": "HSV supports innovation by creating new business opportunities, developing new business models, and reaching new business segments such as information and data services.",
+      "generated_answer": "HSV supports innovation by:\n\n1. **Strategic Partnerships:** Actively seeking and developing deep partnerships with Vietnamese and foreign technology firms to co-create technologies and foster new business models.\n\n2. **Independent Technology Development:** Continuously creating or adapting technologies, ensuring they stay ahead of industry trends and meet customer needs effectively.\n\n3. **Market Research-Driven Innovation:** Conducting thorough market research to identify new opportunities and plan product promotions that help differentiate their offerings in the market.\n\n4. **Proactive Approach:** Staying updated with technological advancements and integrating new technologies into their products, ensuring continuous improvement and innovation.\n\nThese strategies collectively drive HSV's commitment to innovation, enhancing both their product development and market presence.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.4444444444444444,
+            "p": 0.09090909090909091,
+            "f": 0.1509433934069064
+          },
+          "rouge-2": {
+            "r": 0.15,
+            "p": 0.028037383177570093,
+            "f": 0.04724409183458382
+          },
+          "rouge-l": {
+            "r": 0.4444444444444444,
+            "p": 0.09090909090909091,
+            "f": 0.1509433934069064
+          }
+        },
+        "bert_f1": 0.11164862662553787,
+        "semantic_ctx_sim": 0.7412401437759399,
+        "retrieval_hit": true
+      }
+    },
+    {
+      "query": "What kinds of projects does HSV implement?",
+      "ground_truth": "HSV implements projects that use their developed or integrated products and solutions, such as Robotic Process Automation (RPA), and provides post-deployment technical support.",
+      "generated_answer": "HSV implements a variety of projects focused on technological innovation and partnership. These include:\n\n1. **Product Development Projects**: They develop specific technologies such as AI Computer Vision, 3D Digitization tools, and Smart Data Collection solutions.\n\n2. **Strategic Partnerships and Mergers**: HSV engages in partnerships or mergers to enhance their technological capabilities and market reach.\n\n3. **Project Execution**: They independently execute projects like RPA (Robot Process Automation) to streamline business processes.\n\nThese activities are part of their strategic goals outlined in the three-year roadmap, aimed at expanding product offerings and enhancing their technological expertise.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.4090909090909091,
+            "p": 0.11538461538461539,
+            "f": 0.17999999656800006
+          },
+          "rouge-2": {
+            "r": 0.09090909090909091,
+            "p": 0.02197802197802198,
+            "f": 0.03539822695277653
+          },
+          "rouge-l": {
+            "r": 0.4090909090909091,
+            "p": 0.11538461538461539,
+            "f": 0.17999999656800006
+          }
+        },
+        "bert_f1": 0.19128771126270294,
+        "semantic_ctx_sim": 0.6750576496124268,
+        "retrieval_hit": false
+      }
+    },
+    {
+      "query": "What role does the Partner Relations Department play?",
+      "ground_truth": "The Partner Relations Department (P.QHĐT) is responsible for legal and policy management related to partnerships.",
+      "generated_answer": "The Partner Relations Department (P.QHĐT) is responsible for managing the legal and policy aspects of HSV's partnerships. This includes ensuring compliance with regulations and policies, facilitating partner relationships, and handling any legal or regulatory requirements related to partnerships.\n\n**Answer:**\nThe Partner Relations Department manages the legal and policy aspects of HSV's partnerships, ensuring compliance with regulations and policies while facilitating partner relationships.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.9375,
+            "p": 0.36585365853658536,
+            "f": 0.5263157854355187
+          },
+          "rouge-2": {
+            "r": 0.8,
+            "p": 0.25,
+            "f": 0.3809523773242631
+          },
+          "rouge-l": {
+            "r": 0.9375,
+            "p": 0.36585365853658536,
+            "f": 0.5263157854355187
+          }
+        },
+        "bert_f1": 0.5693157911300659,
+        "semantic_ctx_sim": 0.8200511336326599,
+        "retrieval_hit": true
+      }
+    },
+    {
+      "query": "How does HSV engage in market development?",
+      "ground_truth": "HSV develops markets through internal HPT channels, partner channels, digital sales, and eventually direct sales; it also conducts market research and plans communications and promotions.",
+      "generated_answer": "HSV engages in market development by:\n\n1. **Utilizing Internal and Partner Channels**: Initially focusing on business development through existing internal HPT channels and partner relationships for channel sales.\n\n2. **Expanding Digital Channels**: Complementing traditional sales with digital initiatives such as online sales and digital marketing to reach a broader audience.\n\n3. **Conducting Market Research**: Proactively gathering data to understand the market, inform product development, and plan promotional strategies effectively.\n\n4. **Strategic Sales Planning**: Promoting products and solutions through planned marketing campaigns and considering direct sales when appropriate to enhance efficiency and customer access.\n\nThis multifaceted approach ensures HSV is well-positioned to grow its market presence both domestically and internationally.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.4090909090909091,
+            "p": 0.10112359550561797,
+            "f": 0.16216215898384878
+          },
+          "rouge-2": {
+            "r": 0.041666666666666664,
+            "p": 0.009259259259259259,
+            "f": 0.015151512176309124
+          },
+          "rouge-l": {
+            "r": 0.36363636363636365,
+            "p": 0.0898876404494382,
+            "f": 0.14414414096583078
+          }
+        },
+        "bert_f1": 0.24174748361110687,
+        "semantic_ctx_sim": 0.7118627429008484,
+        "retrieval_hit": true
+      }
+    },
+    {
+      "query": "What are HSV's goals in year 1 of the 3-year plan?",
+      "ground_truth": "In year 1, HSV aims to establish organization and governance, select partners, develop initial products and solutions, build technical platforms, create sales channels, and engage in community and innovation events.",
+      "generated_answer": "In Year 1 of the three-year plan, HSV's goals include:\n\n- Establishing organizational structure, processes, job descriptions, and governance systems.\n- Identifying and developing an initial portfolio of partners/products/solutions.\n- Developing go-to-market solutions based on partner offerings and launching the first HPT brand product.\n- Setting up necessary technological platforms to support their products and solutions.\n- Establishing business channels (internal, direct, distribution, digital sales) and generating revenue from more than 3 products/solutions.\n- Engaging in key innovation events, government programs, and tech marketplaces.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.25925925925925924,
+            "p": 0.1,
+            "f": 0.14432989288978648
+          },
+          "rouge-2": {
+            "r": 0.034482758620689655,
+            "p": 0.012195121951219513,
+            "f": 0.018018014157942554
+          },
+          "rouge-l": {
+            "r": 0.25925925925925924,
+            "p": 0.1,
+            "f": 0.14432989288978648
+          }
+        },
+        "bert_f1": 0.3427666425704956,
+        "semantic_ctx_sim": 0.7088875770568848,
+        "retrieval_hit": true
+      }
+    },
+    {
+      "query": "What IP-related goals does HSV have?",
+      "ground_truth": "HSV aims to achieve Intellectual Property (IP) certification for products in year 2 and obtain at least two IP certifications and one patent by year 3.",
+      "generated_answer": "HSV's IP-related goals are as follows:\n\n- **Year 2:** Achieve IP certification for a product during the development of an additional product under the HPT brand.\n- **Year 3:** Develop two self-developed products and ensure more than two IP certifications.\n\nThese goals highlight HSV's focus on protecting and validating their technological innovations through intellectual property.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.2916666666666667,
+            "p": 0.15217391304347827,
+            "f": 0.19999999549387765
+          },
+          "rouge-2": {
+            "r": 0.12,
+            "p": 0.05660377358490566,
+            "f": 0.07692307256739013
+          },
+          "rouge-l": {
+            "r": 0.2916666666666667,
+            "p": 0.15217391304347827,
+            "f": 0.19999999549387765
+          }
+        },
+        "bert_f1": 0.3044174909591675,
+        "semantic_ctx_sim": 0.7079141736030579,
+        "retrieval_hit": true
+      }
+    },
+    {
+      "query": "What is the Linksafe solution?",
+      "ground_truth": "Linksafe is a passwordless authentication solution intended for enterprises, schools, and government.",
+      "generated_answer": "The provided context does not include any information about a Linksafe solution. Therefore, based on the given data, there is no available definition or details regarding the Linksafe solution.\n\nAnswer:  \nBased on the provided context, there is no information available about the Linksafe solution.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.3333333333333333,
+            "p": 0.13793103448275862,
+            "f": 0.19512194707911967
+          },
+          "rouge-2": {
+            "r": 0.0,
+            "p": 0.0,
+            "f": 0.0
+          },
+          "rouge-l": {
+            "r": 0.25,
+            "p": 0.10344827586206896,
+            "f": 0.14634145927424164
+          }
+        },
+        "bert_f1": 0.01501538697630167,
+        "semantic_ctx_sim": 0.35882508754730225,
+        "retrieval_hit": false
+      }
+    },
+    {
+      "query": "What is the Geolntellect solution used for?",
+      "ground_truth": "Geolntellect is used for smart data collection and analysis.",
+      "generated_answer": "The Geolntellect solution is used for **smart data collection and analysis**, particularly involving geospatial data processing or integrating various data sources such as satellite imagery. This aligns with its placement under the \"Smart Data Collection and Analysis\" group in the context provided.\n\n**Answer:**  \nGeolntellect solution is used for smart data collection and analysis, focusing on geospatial data processing and integration.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.8888888888888888,
+            "p": 0.18181818181818182,
+            "f": 0.3018867896333215
+          },
+          "rouge-2": {
+            "r": 0.75,
+            "p": 0.11764705882352941,
+            "f": 0.20338982816432058
+          },
+          "rouge-l": {
+            "r": 0.8888888888888888,
+            "p": 0.18181818181818182,
+            "f": 0.3018867896333215
+          }
+        },
+        "bert_f1": 0.27574461698532104,
+        "semantic_ctx_sim": 0.8611623644828796,
+        "retrieval_hit": true
+      }
+    },
+    {
+      "query": "What is the Smart Check and Track (SCT) solution?",
+      "ground_truth": "The Smart Check and Track (SCT) solution is used for product management via QR codes.",
+      "generated_answer": "The Smart Check and Track (SCT) solution is a product managed via QR codes designed for tracking and managing physical items or access control. It integrates with existing IT systems to enhance efficiency, as part of HPT's comprehensive services. SCT leverages QR technology for smart check and track functionalities, supporting applications like inventory management and access control within an organization's IT infrastructure.\n\n**Answer:**\nThe Smart Check and Track (SCT) solution is a QR-based product designed for tracking physical items or access control, integrated into IT systems to enhance efficiency and manage resources effectively.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.9333333333333333,
+            "p": 0.2222222222222222,
+            "f": 0.35897435586785015
+          },
+          "rouge-2": {
+            "r": 0.6428571428571429,
+            "p": 0.12,
+            "f": 0.2022471883600556
+          },
+          "rouge-l": {
+            "r": 0.9333333333333333,
+            "p": 0.2222222222222222,
+            "f": 0.35897435586785015
+          }
+        },
+        "bert_f1": 0.3513781428337097,
+        "semantic_ctx_sim": 0.8748771548271179,
+        "retrieval_hit": true
+      }
+    },
+    {
+      "query": "Who is responsible for technology and partner development at HSV?",
+      "ground_truth": "Trần Văn Bình, Nguyễn Quang Long, Nguyễn Xuân Tiến, Bùi Mạnh Thành, Bùi Nguyễn Gia Huy, and Phạm Hoàng Quân are part of the Technology & Partner Development Department, handling roles such as programming, software engineering, and presales consulting.",
+      "generated_answer": "The person responsible for technology and partner development at HSV is **Trấn Văn Bình**. He holds the role of Fullstack Programmer within the Technology & Partner Development Department, as detailed in the context provided.",
+      "retrieved_context": "",
+      "metrics": {
+        "rouge": {
+          "rouge-1": {
+            "r": 0.2857142857142857,
+            "p": 0.3125,
+            "f": 0.2985074576965917
+          },
+          "rouge-2": {
+            "r": 0.13157894736842105,
+            "p": 0.15151515151515152,
+            "f": 0.14084506544733208
+          },
+          "rouge-l": {
+            "r": 0.2571428571428571,
+            "p": 0.28125,
+            "f": 0.268656711427935
+          }
+        },
+        "bert_f1": 0.18639995157718658,
+        "semantic_ctx_sim": 0.7232136726379395,
+        "retrieval_hit": true
+      }
+    }
+  ]
+}
