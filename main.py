@@ -1,5 +1,6 @@
 import re
 import unicodedata
+from urllib import response
 from dotenv import load_dotenv
 import os
 import logging
@@ -10,8 +11,7 @@ from utils.logging_config import setup_logging
 from flask import Flask, request, jsonify
 from ingest.embedder import Embedder
 import requests
-from collections import Counter
-
+from llama_index.llms.ollama import Ollama
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -54,6 +54,8 @@ def search():
 
     if not query_text:
         return jsonify({"error": "Missing or empty 'query' parameter"}), 400
+    
+    query_text = unicodedata.normalize("NFC", query_text)
 
     try:
         n_results = int(request_data.get("n_results", 10))
@@ -89,12 +91,13 @@ def search():
 def rag_query():
     request_data = request.get_json() or {}
     query_text = request_data.get("query", "").strip()
-    n_results = int(request_data.get("n_results", 10)) # Số kết quả ban đầu
+    n_results = int(request_data.get("n_results", 5)) # Số kết quả ban đầu
     isRewrite = bool(request_data.get("is_rewrite", False))
 
     if not query_text:
         return jsonify({"error": "Missing 'query' parameter"}), 400
 
+    query_text = unicodedata.normalize("NFC", query_text)
     if isRewrite:
         query_text = rewrite_query(query_text)
 
@@ -119,31 +122,22 @@ def rag_query():
         # Step 2 & 3: (Giữ nguyên phần gọi DeepSeek và Llama)
         # Step 2: Ask DeepSeek for reasoning
         prompt_deepseek = f"""
-        # Role #
-        You are an excellent and reliable office employee at HPT Vietnam Corporation.
-        Your task is to answer questions based on the provided context in Vietnamese language.
+        Context information is below. 
         ---
-
-        # Context #
         {context}
-
         ---
-
-        # Question #
-        {query_text}
-
+        Given the context information and not prior knowledge, answer the query.
+        Query: {query_text}
         ---
-
-        # Constraints #
-        You MUST strictly follow these rules:
-
-        1. ONLY use information that is explicitly or implicitly present in the provided context.
-        2. DO NOT use your own knowledge, assumptions, or external information.
-        3. DO NOT make up, guess, or fabricate any part of the answer.
-        4. If the answer cannot be determined based on the context, respond exactly with:
-        **"Tôi không biết."**
-
-        Maintain a professional, helpful, and accurate tone. Be trustworthy and precise like a model employee.
+        Constraints:
+        - You are an assistant helping HPT Vietnam Corporation.
+        - MUST use English language in any response.
+        - Do not include any disclaimers or unnecessary information.
+        - Be concise and specific.
+        - Use Markdown format for the answer.
+        - This is very important to my career. You'd better be careful with the answer.
+        
+        Answer:
         """
 
         response_deepseek = requests.post(
@@ -170,8 +164,8 @@ def rag_query():
                 "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
             }), 200
         
-        # deepseek_output_think = deepseek_output.split("</think>\n")[0]
-        # deepseek_output_answer = deepseek_output.split("</think>\n")[1]
+        deepseek_output_think = deepseek_output.split("</think>\n")[0]
+        deepseek_output_answer = deepseek_output.split("</think>\n")[1]
 
 #         # Step 3: Vietnamese final answer using LLaMA
 #         prompt_llama = f"""
@@ -191,9 +185,9 @@ def rag_query():
         return jsonify({
             "query": query_text,
             "retrieved_context": context,
-            # "reasoning_deepseek": deepseek_output_think,
-            # "final_answer": deepseek_output_answer
-            "final_answer": deepseek_output,
+            "reasoning": deepseek_output_think,
+            "final_answer": deepseek_output_answer
+            # "final_answer": deepseek_output,
         }), 200
 
     except Exception as e:
@@ -290,6 +284,18 @@ def ingest():
         "total_embeddings": total_embeddings,
         "elapsed_time": f"{elapsed_time:.2f} seconds"
     }), 200
+
+@app.route("/ollama/search", methods=["POST"])
+def ollama_search():
+    request_data = request.get_json() or {}
+    query_text = request_data.get("query", "").strip()
+    llm = Ollama(base_url="http://10.6.18.2:11434", model=MODEL_DEEPSEEK, request_timeout=120)
+    response = llm.complete(query_text)
+    if response:
+        return jsonify({"response": response.text}), 200
+    else:
+        return jsonify({"error": "No response from LLM"}), 500
+
 
 def main():
     # Ensure directories exist

@@ -6,8 +6,7 @@ import os
 from ingest.text_extractor import extract_text_from_markdown
 from ingest.text_chunker import split_text
 from chromadb.utils import embedding_functions
-
-MODEL_EMBEDDING = "intfloat/multilingual-e5-base"
+MODEL_EMBEDDING = "sentence-transformers/all-mpnet-base-v2"
 
 sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(
     model_name=MODEL_EMBEDDING
@@ -64,7 +63,8 @@ class Embedder:
         Returns:
             list: The embedding vector
         """
-        return self.model.encode(f"passage: {text}", normalize_embeddings=True).tolist()
+        # return self.model.encode(f"passage: {text}", normalize_embeddings=True).tolist()
+        return self.model.encode(text, normalize_embeddings=True).tolist()
     
     def encode_query(self, text):
         """
@@ -76,7 +76,8 @@ class Embedder:
         Returns:
             list: The embedding vector
         """
-        return self.model.encode(f"query: {text}", normalize_embeddings=True).tolist()
+        # return self.model.encode(f"query: {text}", normalize_embeddings=True).tolist()
+        return self.model.encode(text, normalize_embeddings=True).tolist()
         
     def embed_chunks(self, chunks, metadata_list):
         """
