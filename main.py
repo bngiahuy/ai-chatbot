@@ -25,9 +25,16 @@ embedder = Embedder(chroma_path="./chroma_storage")
 # Setup logging
 setup_logging()
 
+
+import re
+#Tiền xử lý câu truy vấn
+def normalize_query(query):
+    query = query.strip().lower()
+    query = re.sub(r'[.,!?-]', '', query)
+    return query
 # Helper function
 def run_vector_search(query_text: str, n_results: int = 10, metadata_filters=None):
-    query_embedding = embedder.encode_query(query_text)
+    query_embedding = embedder.encode_query(normalize_query(query_text))
     
     query_params = {
         "query_embeddings": [query_embedding],
@@ -36,9 +43,29 @@ def run_vector_search(query_text: str, n_results: int = 10, metadata_filters=Non
     if metadata_filters:
         query_params["where"] = metadata_filters
 
+    THRESHOLD = 0.3
     raw_results = embedder.collection.query(**query_params)
+    # Lọc kết quả
+    filtered = {
+        "documents": [[]],
+        "ids": [[]],
+        "distances": [[]],
+        "metadatas": [[]]
+    }
 
-    return raw_results
+    for i, (doc, dist, _id, meta) in enumerate(zip(
+        raw_results["documents"][0],
+        raw_results["distances"][0],
+        raw_results["ids"][0],
+        raw_results["metadatas"][0]
+    )):
+        if dist <= THRESHOLD:
+            filtered["documents"][0].append(doc)
+            filtered["distances"][0].append(dist)
+            filtered["ids"][0].append(_id)
+            filtered["metadatas"][0].append(meta)
+
+    return filtered
 
 
 @app.route("/ping", methods=["GET"])
@@ -111,9 +138,21 @@ def rag_query():
                 "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
             }), 200
 
-        retrieved_docs = initial_results.get("documents", [[]])[0]
-        retrieved_chunks = [doc for doc in retrieved_docs if doc and doc.strip()]
-        context = "\n".join(retrieved_chunks)
+        # Gộp toàn bộ nhóm document (nếu có nhiều)
+        retrieved_docs = sum(initial_results.get("documents", []), [])
+        retrieved_docs = [doc for doc in retrieved_docs if doc and doc.strip()]
+
+        # Làm sạch, giới hạn số lượng để tránh quá tải
+        def clean_chunk(c):
+            return re.sub(r"[#*_>`-]", "", c).strip()
+
+        retrieved_chunks = [clean_chunk(doc) for doc in retrieved_docs]
+        retrieved_chunks = retrieved_chunks[:5]  # hoặc dùng nhiều hơn nếu context ngắn
+
+        # Ghép context rõ ràng hơn
+        context = "\n---\n".join(retrieved_chunks)
+        logger.info(f"[Context Preview]\n{context}")
+
 
 
         # Step 2 & 3: (Giữ nguyên phần gọi DeepSeek và Llama)
