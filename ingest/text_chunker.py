@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 def split_text(
     text: str,
-    chunk_size: int = 350,
+    chunk_size: int = 500,
     chunk_overlap: int = 50,
     verbose: bool = False
 ) -> List[str]:

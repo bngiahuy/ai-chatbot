@@ -5,10 +5,18 @@ import logging
 import os
 from ingest.text_extractor import extract_text_from_markdown
 from ingest.text_chunker import split_text
+from chromadb.utils import embedding_functions
+
+MODEL_EMBEDDING = "intfloat/multilingual-e5-base"
+
+sentence_transformer_ef = embedding_functions.SentenceTransformerEmbeddingFunction(
+    model_name=MODEL_EMBEDDING
+)
+
 logger = logging.getLogger(__name__)
 
 class Embedder:
-    def __init__(self, model_name="intfloat/multilingual-e5-base", chroma_path="./chroma_storage"):
+    def __init__(self, model_name=MODEL_EMBEDDING, chroma_path="./chroma_storage"):
         """
         Initialize the embedder with the specified model and ChromaDB client.
         Args:
@@ -38,10 +46,11 @@ class Embedder:
         )
         self.collection = self.client.get_or_create_collection(
             "hsv_document_chunks", 
+            embedding_function=sentence_transformer_ef,
             metadata={
-                "hnsw:space": "cosine",
-                "hnsw:construction_ef": 200,
-                "hnsw:search_ef": 200,
+                "hnsw:space": "cosine", # Cosine distance
+                "hnsw:construction_ef": 200, # Construction ef is the size of the dynamic list of neighbors
+                "hnsw:search_ef": 200, # Search ef is the size of the dynamic list of neighbors during search
             }
         )
     

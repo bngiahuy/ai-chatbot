@@ -122,13 +122,13 @@ curl -X POST http://localhost:5000/rag \
 | --------- | ------ | -------------------------------------------------- |
 | `/ping`   | GET    | Kiểm tra trạng thái hoạt động của hệ thống         |
 | `/ingest` | GET    | Nhập dữ liệu từ các tài liệu trong thư mục `data/` |
-| `/search` | GET    | Tìm kiếm các đoạn văn bản tương tự với truy vấn    |
+| `/search` | POST    | Tìm kiếm các đoạn văn bản tương tự với truy vấn    |
 | `/rag`    | POST   | Tạo câu trả lời dựa trên nội dung tài liệu         |
 
 ### Các tham số API
 
 #### `/search`
-- `query` (string): Câu truy vấn tìm kiếm
+- `query` (body): Câu truy vấn tìm kiếm
 
 #### `/rag`
 - Body JSON:
@@ -148,8 +148,8 @@ curl -X POST http://localhost:5000/rag \
 ## Triển khai
 
 Hệ thống hiện đang sử dụng Ollama API cho các mô hình LLM:
-- MODEL_DEEPSEEK = 'deepseek-r1:8b' (phân tích ban đầu)
-- MODEL_LLAMA = 'llama3.2' (tinh chỉnh câu trả lời)
+- MODEL_DEEPSEEK = 'deepseek-r1:7b' (phân tích ban đầu)
+- MODEL_LLAMA = 'llama3.2' (tinh chỉnh câu trả lời, tuỳ chọn)
 
 Server Ollama được cấu hình tại: `OLLAMA_SERVER = 'http://10.6.18.2:11434/api/generate'`
 

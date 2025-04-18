@@ -1,3 +1,5 @@
+import re
+import unicodedata
 from dotenv import load_dotenv
 import os
 import logging
@@ -14,7 +16,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
-MODEL_DEEPSEEK = 'deepseek-r1:8b'
+MODEL_DEEPSEEK = 'deepseek-r1:7b'
 MODEL_LLAMA = 'llama3.2'
 OLLAMA_SERVER = os.environ.get("OLLAMA_SERVER", "http://localhost:11434/api/generate")
 # Initialize the embedder with the same ChromaDB path from your main script
@@ -24,8 +26,9 @@ embedder = Embedder(chroma_path="./chroma_storage")
 setup_logging()
 
 # Helper function
-def run_vector_search(query_text: str, n_results: int =10, metadata_filters=None):
+def run_vector_search(query_text: str, n_results: int = 10, metadata_filters=None):
     query_embedding = embedder.encode_query(query_text)
+    
     query_params = {
         "query_embeddings": [query_embedding],
         "n_results": n_results,
@@ -47,6 +50,7 @@ def search():
     start_time = time.time()
     request_data = request.get_json() or {}
     query_text = request_data.get("query", "").strip()
+    isRewrite = bool(request_data.get("is_rewrite", False))
 
     if not query_text:
         return jsonify({"error": "Missing or empty 'query' parameter"}), 400
@@ -56,6 +60,9 @@ def search():
         metadata_filters = request_data.get("metadata_filters", None)
 
         logger.info(f"Search: '{query_text}' (n_results={n_results})")
+
+        if isRewrite: 
+            query_text = rewrite_query(query_text)  # Rewrite the query for better results
 
         result_data = run_vector_search(
             query_text=query_text,
@@ -82,15 +89,18 @@ def search():
 def rag_query():
     request_data = request.get_json() or {}
     query_text = request_data.get("query", "").strip()
-    n_initial_results = int(request_data.get("n_initial_results", 10)) # Số kết quả ban đầu
-    n_expanded_results = int(request_data.get("n_expanded_results", 30)) # Số kết quả mở rộng từ file chính
+    n_results = int(request_data.get("n_results", 10)) # Số kết quả ban đầu
+    isRewrite = bool(request_data.get("is_rewrite", False))
 
     if not query_text:
         return jsonify({"error": "Missing 'query' parameter"}), 400
 
+    if isRewrite:
+        query_text = rewrite_query(query_text)
+
     try:
         # Step 1a: Initial search to find relevant files
-        initial_results = run_vector_search(query_text, n_results=n_initial_results)
+        initial_results = run_vector_search(query_text, n_results=n_results)
 
         if not initial_results or not initial_results.get("ids") or not initial_results["ids"][0]:
             logger.warning(f"[RAG] No relevant chunks found initially for query: {query_text}")
@@ -101,83 +111,39 @@ def rag_query():
                 "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
             }), 200
 
-        # Step 1b: Identify the most relevant file
-        metadatas = initial_results.get("metadatas", [[]])[0]
-        if not metadatas:
-             logger.warning(f"[RAG] No metadata found in initial results for query: {query_text}")
-             # Xử lý như không tìm thấy chunks
-             return jsonify({
-                "query": query_text, "retrieved_context": "",
-                "reasoning_deepseek": "I don't know based on the provided context.",
-                "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
-            }), 200
-
-        filenames = [meta.get("filename") for meta in metadatas if meta and meta.get("filename")]
-        if not filenames:
-            logger.warning(f"[RAG] No filenames found in metadata for query: {query_text}")
-             # Xử lý như không tìm thấy chunks
-            return jsonify({
-                "query": query_text, "retrieved_context": "",
-                "reasoning_deepseek": "I don't know based on the provided context.",
-                "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
-            }), 200
-
-        most_common_file = Counter(filenames).most_common(1)[0][0]
-        logger.info(f"[RAG] Most relevant file identified: {most_common_file}")
-
-        # Step 1c: Retrieve more context from the most relevant file
-        expanded_results = run_vector_search(
-            query_text,
-            n_results=n_expanded_results,
-            metadata_filters={"filename": most_common_file}
-        )
-
-        # Step 1d: Combine context
-        retrieved_docs = expanded_results.get("documents", [[]])[0]
+        retrieved_docs = initial_results.get("documents", [[]])[0]
         retrieved_chunks = [doc for doc in retrieved_docs if doc and doc.strip()]
-
-        if not retrieved_chunks:
-             logger.warning(f"[RAG] No expanded chunks found for file {most_common_file}, query: {query_text}")
-             # Fallback: sử dụng kết quả ban đầu nếu có
-             initial_docs = initial_results.get("documents", [[]])[0]
-             retrieved_chunks = [doc for doc in initial_docs if doc and doc.strip()]
-             if not retrieved_chunks:
-                  # Vẫn không có gì, trả về không biết
-                  return jsonify({
-                      "query": query_text, "retrieved_context": "",
-                      "reasoning_deepseek": "I don't know based on the provided context.",
-                      "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
-                  }), 200
-
         context = "\n".join(retrieved_chunks)
-        logger.info(f"[RAG] Expanded context generated ({len(retrieved_chunks)} chunks from {most_common_file}) for query: {query_text}")
 
 
         # Step 2 & 3: (Giữ nguyên phần gọi DeepSeek và Llama)
         # Step 2: Ask DeepSeek for reasoning
         prompt_deepseek = f"""
-You are a precise and obedient language model of HPT Vietnam Corporation.
+        # Role #
+        You are an excellent and reliable office employee at HPT Vietnam Corporation.
+        Your task is to answer questions based on the provided context in Vietnamese language.
+        ---
 
-Your task is to answer questions **only** based on the given context.
+        # Context #
+        {context}
 
-- Do **not** use any prior knowledge, assumptions, or external information.
-- Do **not** make up facts, speculate, or include opinions.
-- If the answer cannot be found **explicitly or implicitly** in the context, reply with:
-"I don't know based on the provided context."
+        ---
 
-Respond clearly, concisely, and strictly grounded in the context.
+        # Question #
+        {query_text}
 
----
+        ---
 
-Context:
-{context}
+        # Constraints #
+        You MUST strictly follow these rules:
 
----
+        1. ONLY use information that is explicitly or implicitly present in the provided context.
+        2. DO NOT use your own knowledge, assumptions, or external information.
+        3. DO NOT make up, guess, or fabricate any part of the answer.
+        4. If the answer cannot be determined based on the context, respond exactly with:
+        **"Tôi không biết."**
 
-Question:
-{query_text}
-
-Answer:
+        Maintain a professional, helpful, and accurate tone. Be trustworthy and precise like a model employee.
         """
 
         response_deepseek = requests.post(
@@ -187,8 +153,8 @@ Answer:
                 "model": MODEL_DEEPSEEK, 
                 "stream": False,
                 "options": {
-                    "temperature": 0.0,
-                    "seed": 42,
+                    "temperature": 0.2,
+                    "seed": 123,
                 }
             },
         )
@@ -204,8 +170,8 @@ Answer:
                 "final_answer": "Xin lỗi, tôi không tìm thấy thông tin cụ thể để trả lời câu hỏi này."
             }), 200
         
-        deepseek_output_think = deepseek_output.split("</think>\n")[0]
-        deepseek_output_answer = deepseek_output.split("</think>\n")[1]
+        # deepseek_output_think = deepseek_output.split("</think>\n")[0]
+        # deepseek_output_answer = deepseek_output.split("</think>\n")[1]
 
 #         # Step 3: Vietnamese final answer using LLaMA
 #         prompt_llama = f"""
@@ -225,15 +191,56 @@ Answer:
         return jsonify({
             "query": query_text,
             "retrieved_context": context,
-            "reasoning_deepseek": deepseek_output_think,
-            "final_answer": deepseek_output_answer
+            # "reasoning_deepseek": deepseek_output_think,
+            # "final_answer": deepseek_output_answer
+            "final_answer": deepseek_output,
         }), 200
 
     except Exception as e:
         logger.error(f"[RAG Error] {e}", exc_info=True) # Log traceback
         return jsonify({"error": f"RAG failed: {str(e)}"}), 500
 
+def rewrite_query(query_text):
+    """
+    Rewrite the query to be more specific and detailed.
+    
+    Args:
+        query_text (str): The original query text.
+        
+    Returns:
+        str: The rewritten query text.
+    """
+    query_text = unicodedata.normalize("NFC", query_text)
+    prompt = f"""
+    You're an assistant helping reformulate user query for vector search.
 
+    Given a user query, rewrite it into a clear, complete, and context-rich query that is suitable for semantic vector search. Response only the rewritten query without any additional text or explanation.
+    - Use English language.
+    - Keep it concise but specific.
+    - Expand vague terms into corporate-specific language if possible.
+    - Do not change the meaning of the query.
+
+    Original query:
+    {query_text}
+
+    Rewritten Query:
+    """
+    
+    response = requests.post(
+        OLLAMA_SERVER,
+        json={
+            "prompt": prompt, 
+            "model": MODEL_LLAMA, 
+            "stream": False,
+            "options": {
+                "temperature": 0,
+                "seed": 123,
+            }
+        },
+    )
+    
+    response.raise_for_status()
+    return response.json().get("response", "").strip()
 
 @app.route("/ingest", methods=["GET"])
 def ingest():
