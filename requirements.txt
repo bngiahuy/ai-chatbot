@@ -1,10 +1,19 @@
 Flask
-accelerate
-pdfminer.six
-dotenv
-tiktoken
-waitress
-langchain
+python-dotenv
+requests
+llama-index
+llama-index-llms-ollama
+rouge
+bert-score
 sentence-transformers
+torch # Often required by sentence-transformers and transformers
+transformers
+accelerate
 chromadb
-pyvi
+tiktoken
+pdfminer.six # Kept from original, assuming it's needed for ingestion
+waitress
+pyvi # Kept from original
+tqdm
+numpy
+langchain
