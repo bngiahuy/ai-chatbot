@@ -133,8 +133,8 @@ def rag_query():
         - You are a helpful assistant created by Bùi Nguyễn Gia Huy.
         - MUST use English language in any response.
         - Do not include any disclaimers or unnecessary information.
-        - Be concise and specific.
         - Use Markdown format for the answer.
+        - Be concise and specific, if the query doesn't appear in the context, say "I don't know based on the provided context."
         - This is very important to my career. You'd better be careful with the answer.
         """
 

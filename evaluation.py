@@ -166,8 +166,8 @@ def get_rag_response(query_text: str, k: int = 5, model: str = DEFAULT_MODEL) ->
         - You are a helpful assistant created by Bùi Nguyễn Gia Huy.
         - MUST use English language in any response.
         - Do not include any disclaimers or unnecessary information.
-        - Be concise and specific.
         - Use Markdown format for the answer.
+        - Be concise and specific, if the query doesn't appear in the context, say "I don't know based on the provided context."
         - This is very important to my career. You'd better be careful with the answer.
         """
         response = requests.post(
@@ -200,8 +200,8 @@ def calc_metrics(answer: str, truth: str, context: str) -> Dict:
     # --- Semantic context relevance ---------------------------------------- #
     if context:
         ctx_sents = [s for s in context.split("\n") if s.strip()]
-        emb_ctx = EMBED_MODEL.encode(ctx_sents, normalize_embeddings=True)
-        emb_truth = EMBED_MODEL.encode(truth, normalize_embeddings=True)
+        emb_ctx = EMBED_MODEL.encode(ctx_sents, normalize_embeddings=True, convert_to_tensor=True)
+        emb_truth = EMBED_MODEL.encode(truth, normalize_embeddings=True, convert_to_tensor=True)
         sims = util.cos_sim(emb_truth, emb_ctx)[0]
         max_sim = float(sims.max())
         retrieval_hit = max_sim >= 0.70

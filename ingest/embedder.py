@@ -65,7 +65,7 @@ class Embedder:
             list: The embedding vector
         """
         # return self.model.encode(f"passage: {text}", normalize_embeddings=True).tolist()
-        return self.model.encode(text, normalize_embeddings=True).tolist()
+        return self.model.encode(text, normalize_embeddings=True, convert_to_tensor=True).tolist()
     
     def encode_query(self, text):
         """
@@ -78,7 +78,7 @@ class Embedder:
             list: The embedding vector
         """
         # return self.model.encode(f"query: {text}", normalize_embeddings=True).tolist()
-        return self.model.encode(text, normalize_embeddings=True).tolist()
+        return self.model.encode(text, normalize_embeddings=True, convert_to_tensor=True).tolist()
         
     def embed_chunks(self, chunks, metadata_list):
         """
